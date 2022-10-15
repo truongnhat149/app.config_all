@@ -1,0 +1,159 @@
+  public static DataTable GetDataTableFromExcel(string path, bool hasHeader = true)
+        {
+            try
+            {
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                using (var pck = new OfficeOpenXml.ExcelPackage())
+                {
+                    using (var stream = File.OpenRead(path))
+                    {
+                        pck.Load(stream);
+                    }
+                    var ws = pck.Workbook.Worksheets.First();
+                    DataTable tbl = new DataTable();
+                    foreach (var firstRowCell in ws.Cells[1, 1, 1, ws.Dimension.End.Column])
+                    {
+                        tbl.Columns.Add(hasHeader ? firstRowCell.Text : string.Format("Column {0}", firstRowCell.Start.Column));
+                    }
+                    var startRow = hasHeader ? 2 : 1;
+                    for (int rowNum = startRow; rowNum <= ws.Dimension.End.Row; rowNum++)
+                    {
+                        var wsRow = ws.Cells[rowNum, 1, rowNum, ws.Dimension.End.Column];
+                        DataRow row = tbl.Rows.Add();
+                        foreach (var cell in wsRow)
+                        {
+                            row[cell.Start.Column - 1] = cell.Text;
+                        }
+                    }
+                    return tbl;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return null;
+            }
+        }
+        public static void ExportExcel(List<string> lstTWork)
+        {
+            //đoạn này lấy dữ liệu
+            //DataTable dt = new DataTable();
+            //List<CheckingInfo> lstPCD = new List<CheckingInfo>();
+            //try
+            //{
+            //    dt = MySQLProvider.Instance.ExecuteQuery(string.Format("SELECT * FROM CheckingInfo WHERE DATE(CheckingDate) >= '{0}' AND DATE(CheckingDate) <= '{1}'", dtpFrom.SelectedDate.Value.ToString("yyyy-MM-dd"), dtpTo.SelectedDate.Value.ToString("yyyy-MM-dd")));
+            //    foreach (DataRow r in dt.Rows)
+            //    {
+            //        lstPCD.Add(new CheckingInfo()
+            //        {
+            //            ID = Convert.ToInt32(r["ID"]),
+            //            Name = r["Name"].ToString(),
+            //            PO_Name = r["PO_Name"].ToString(),
+            //            Order_No = r["Order_No"].ToString(),
+            //            Size = Convert.ToInt32(r["Size"].ToString()),
+            //            PCD = r["PCD"].ToString(),
+            //            UserID = r["UserID"].ToString(),
+            //            Result = r["Result"].ToString(),
+            //            CheckingDate = Convert.ToDateTime(r["CheckingDate"]),
+            //            IsPlated = Convert.ToBoolean(r["IsPlated"]),
+            //            Note = r["Note"].ToString(),
+            //            CheckCount = Convert.ToInt32(r["CheckCount"].ToString())
+            //        });
+            //    }
+
+            //}
+            //catch (Exception)
+            //{
+            //    System.Windows.MessageBox.Show("Lấy dữ liệu thất bại, vui lòng thử lại sau");
+            //}
+            //hết đoạn lấy dữ liệu
+            //if (lstTWork.Count > 0)
+            //{
+
+            //    try
+            //    {
+            //        using (System.Windows.Forms.FolderBrowserDialog fbd = new System.Windows.Forms.FolderBrowserDialog())
+            //        {
+            //            if (fbd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            //            {
+            //                string filePath = fbd.SelectedPath + "\\TWorkInfo_" + DateTime.Now.Date.ToString("yyyyMMddHHmmss") + ".xlsx";
+
+            //                var newFile = new FileInfo(filePath);
+            //                using (var excelPackage = new ExcelPackage(newFile))
+            //                {
+            //                    var worksheets = excelPackage.Workbook.Worksheets;
+            //                    if (worksheets.Count == 0)
+            //                    {
+            //                        // Tạo author cho file Excel
+            //                        excelPackage.Workbook.Properties.Author = "Misumi F4";
+            //                        // Tạo title cho file Excel
+            //                        excelPackage.Workbook.Properties.Title = "TWork info " + DateTime.Now.ToString("yy-MM-dd");
+            //                        // thêm tí comments vào làm màu 
+            //                        excelPackage.Workbook.Properties.Comments = "Only for using local";
+
+            //                        // Add Sheet vào file Excel                            
+            //                        excelPackage.Workbook.Worksheets.Add("TWorkInfo");
+            //                    }
+            //                    else if (worksheets.Count == 1)
+            //                    {
+
+            //                        var ws = worksheets.AsEnumerable().Where(w => w.Name == "TWorkInfo").FirstOrDefault();
+            //                        if (ws != null)
+            //                        {
+            //                            ws.Name = "TempSheet";
+            //                            worksheets.Delete(ws);
+            //                        }
+            //                        // Tạo author cho file Excel
+            //                        excelPackage.Workbook.Properties.Author = "Misumi F4";
+            //                        // Tạo title cho file Excel
+            //                        excelPackage.Workbook.Properties.Title = "TWork info " + DateTime.Now.ToString("yy-MM-dd");
+            //                        // thêm tí comments vào làm màu 
+            //                        excelPackage.Workbook.Properties.Comments = "Only for using local";
+
+            //                        // Add Sheet vào file Excel                            
+            //                        excelPackage.Workbook.Worksheets.Add("TWorkInfo");
+
+            //                    }
+            //                    else if (worksheets.Count > 1)
+            //                    {
+            //                        var ws = worksheets.AsEnumerable().Where(w => w.Name == "TWorkInfo").FirstOrDefault();
+            //                        worksheets.Delete(ws);
+
+            //                        // Add Sheet vào file Excel                            
+            //                        excelPackage.Workbook.Worksheets.Add("TWorkInfo");
+
+            //                    }
+
+            //                    // Lấy Sheet đầu tiên 
+            //                    var workSheet = excelPackage.Workbook.Worksheets["TWorkInfo"];
+            //                    // Đổ data vào Excel file                            
+            //                    workSheet.Cells[1, 1].LoadFromCollection(lstTWork, true, OfficeOpenXml.Table.TableStyles.Dark9);
+            //                    workSheet.Cells[workSheet.Dimension.Address].AutoFitColumns();
+
+            //                    //format excel columns
+            //                    BindingFormatExcel(workSheet, lstTWork);
+
+            //                    excelPackage.Save();
+            //                }
+
+
+            //            }
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        MessageBox.Show(ex.Message);
+            //    }
+
+            //}
+        }
+
+        //private static void BindingFormatExcel(ExcelWorksheet excelWorkSheet, List<T_Regulation> lstTWork)
+        //{
+        //    //format cell WORKSTARTDT - WORKENDDT
+        //    var cellCheckingDate = excelWorkSheet.Cells[2, 12, lstTWork.Count+1, 13];
+        //    cellCheckingDate.Style.Numberformat.Format = "yyyy-mm-dd hh:mm:ss";
+        //    cellCheckingDate.AutoFitColumns(15);
+
+       
+        //}
